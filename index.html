@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hen — Design Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EFEDE6;
+    --paper-dim:#E6E3D9;
+    --ink:#14181C;
+    --red:#E8432E;
+    --blue:#2F5D8A;
+    --line:#C9C4B8;
+    --mono: 'IBM Plex Mono', monospace;
+    --body: 'Work Sans', sans-serif;
+    --display: 'Archivo Black', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--paper); color:var(--ink); font-family:var(--body); overflow-x:hidden;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important;} }
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  img{max-width:100%; display:block;}
+
+  /* crop marks signature motif */
+  .marked{position:relative;}
+  .marked::before,.marked::after,.marked .m2,.marked .m3{content:"";position:absolute;width:16px;height:16px;pointer-events:none;}
+  .marked::before{top:-1px;left:-1px;border-top:2px solid var(--ink);border-left:2px solid var(--ink);}
+  .marked::after{top:-1px;right:-1px;border-top:2px solid var(--ink);border-right:2px solid var(--ink);}
+  .marked .m2{bottom:-1px;left:-1px;border-bottom:2px solid var(--ink);border-left:2px solid var(--ink);}
+  .marked .m3{bottom:-1px;right:-1px;border-bottom:2px solid var(--ink);border-right:2px solid var(--ink);}
+
+  /* nav */
+  nav{position:fixed; top:0; left:0; right:0; z-index:60; display:flex; justify-content:space-between; align-items:center; padding:20px 32px; mix-blend-mode:difference; color:#fff;}
+  nav .wordmark{font-family:var(--display); font-size:16px; letter-spacing:0.02em; background:none; color:#fff;}
+  nav ul{list-style:none; display:flex; gap:28px; font-family:var(--mono); font-size:12px; letter-spacing:0.06em;}
+  nav a{color:#fff; text-decoration:none; position:relative;}
+  nav a::after{content:"";position:absolute; left:0; bottom:-4px; width:0; height:1px; background:#fff; transition:width .25s ease;}
+  nav a:hover::after,nav a.active::after{width:100%;}
+  .nav-toggle{display:none; color:#fff; font-family:var(--mono); font-size:12px; letter-spacing:0.08em;}
+  @media (max-width:700px){
+    nav ul{position:fixed; top:0; right:0; height:100vh; width:220px; background:var(--ink); flex-direction:column; justify-content:center; align-items:flex-start; padding:0 32px; gap:26px; transform:translateX(100%); transition:transform .35s ease; mix-blend-mode:normal;}
+    nav ul.open{transform:translateX(0);}
+    .nav-toggle{display:block; z-index:70;}
+  }
+
+  /* hero */
+  .hero{min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:0 32px; position:relative;}
+  .hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.12em; color:var(--red); margin-bottom:18px;}
+  .hero-eyebrow::before{content:"● ";}
+  .hero h1{font-family:var(--display); font-size:clamp(70px,16vw,220px); line-height:0.82; letter-spacing:-0.01em; margin-right:-6px;}
+  .hero-sub{display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:28px; max-width:640px;}
+  .hero-sub span{font-family:var(--mono); font-size:13px; letter-spacing:0.04em; padding-bottom:2px; border-bottom:1px solid var(--line);}
+  .hero-line{margin-top:44px; font-size:17px; line-height:1.6; max-width:460px; color:#3a3f43;}
+  .scroll-cue{position:absolute; bottom:36px; left:32px; font-family:var(--mono); font-size:11px; letter-spacing:0.1em; color:#6b6f72; display:flex; align-items:center; gap:8px;}
+  .scroll-cue .bar{width:1px; height:28px; background:var(--line); position:relative; overflow:hidden;}
+  .scroll-cue .bar::after{content:"";position:absolute; top:-100%; left:0; width:100%; height:100%; background:var(--red); animation:drip 1.8s ease-in-out infinite;}
+  @keyframes drip{50%{top:100%;} 100%{top:100%;}}
+
+  /* section label + filters */
+  .section-label{display:flex; align-items:center; gap:14px; padding:60px 32px 24px; font-family:var(--mono); font-size:12px; letter-spacing:0.1em; color:#6b6f72;}
+  .section-label .rule{flex:1; height:1px; background:var(--line);}
+
+  .filters{display:flex; flex-wrap:wrap; gap:10px; padding:0 32px 40px;}
+  .filter-btn{font-family:var(--mono); font-size:12px; letter-spacing:0.06em; padding:9px 16px; border:1px solid var(--ink); color:var(--ink); background:transparent; transition:background .2s ease,color .2s ease;}
+  .filter-btn:hover{background:var(--paper-dim);}
+  .filter-btn.active{background:var(--ink); color:var(--paper);}
+
+  /* projects */
+  .project{display:grid; grid-template-columns:1.15fr 0.85fr; gap:0; align-items:stretch; border-top:1px solid var(--line); transition:opacity .35s ease, transform .35s ease, max-height .4s ease; overflow:hidden;}
+  .project:last-of-type{border-bottom:1px solid var(--line);}
+  .project.flip{grid-template-columns:0.85fr 1.15fr;}
+  .project.flip .p-media{order:2;}
+  .project.flip .p-info{order:1;}
+  .project.hide{opacity:0; max-height:0; border-top:none; pointer-events:none;}
+
+  .p-media{padding:40px; display:flex; align-items:center; justify-content:center; background:var(--paper-dim); cursor:pointer; overflow:hidden;}
+  .p-media img{width:100%; max-height:520px; object-fit:cover; transition:transform .5s ease;}
+  .p-media:hover img{transform:scale(1.04);}
+
+  .p-info{padding:56px 44px; display:flex; flex-direction:column; justify-content:center; gap:18px;}
+  .p-tag{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11px; letter-spacing:0.08em; color:#fff; background:var(--ink); padding:5px 10px; width:fit-content;}
+  .p-tag.blue{background:var(--blue);}
+  .p-tag.red{background:var(--red);}
+  .p-num{font-family:var(--mono); font-size:12px; color:#9a9d99;}
+  .p-info h3{font-family:var(--display); font-size:clamp(30px,3.6vw,46px); line-height:1.02;}
+  .p-story{font-size:15.5px; line-height:1.65; color:#3a3f43; max-width:46ch;}
+  .p-meta{display:flex; flex-wrap:wrap; gap:22px; margin-top:2px; font-family:var(--mono); font-size:11.5px; color:#6b6f72;}
+  .p-meta b{color:var(--ink); font-weight:500;}
+  .p-btn{margin-top:8px; align-self:flex-start; font-family:var(--mono); font-size:12px; letter-spacing:0.06em; padding:11px 18px; border:1px solid var(--ink); display:inline-flex; align-items:center; gap:8px; transition:background .2s ease,color .2s ease;}
+  .p-btn:hover{background:var(--ink); color:var(--paper);}
+
+  @media (max-width:820px){
+    .project,.project.flip{grid-template-columns:1fr;}
+    .project.flip .p-media,.project.flip .p-info{order:initial;}
+    .p-media{padding:24px;}
+    .p-info{padding:36px 24px;}
+  }
+
+  /* about */
+  .about{background:var(--ink); color:var(--paper); padding:110px 32px; display:grid; grid-template-columns:1fr 1fr; gap:40px;}
+  .about h2{font-family:var(--display); font-size:clamp(34px,5vw,58px); line-height:1.05;}
+  .about p{font-size:16px; line-height:1.7; color:#c7c9c4; max-width:52ch;}
+  @media (max-width:820px){.about{grid-template-columns:1fr;}}
+
+  /* footer */
+  footer{padding:60px 32px 40px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px;}
+  .contact-btn{font-family:var(--display); font-size:clamp(24px,4.4vw,46px); color:var(--ink); border-bottom:4px solid var(--red); position:relative;}
+  .contact-btn .copied{position:absolute; top:-26px; left:0; font-family:var(--mono); font-size:11px; color:var(--blue); opacity:0; transition:opacity .2s ease;}
+  .contact-btn.copied-show .copied{opacity:1;}
+  footer .meta{font-family:var(--mono); font-size:12px; color:#6b6f72; line-height:1.8;}
+
+  /* modal */
+  .modal-overlay{position:fixed; inset:0; background:rgba(20,24,28,0.92); z-index:100; display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; pointer-events:none; transition:opacity .3s ease;}
+  .modal-overlay.open{opacity:1; pointer-events:auto;}
+  .modal{background:var(--paper); max-width:920px; width:100%; max-height:88vh; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; transform:translateY(16px); transition:transform .3s ease;}
+  .modal-overlay.open .modal{transform:translateY(0);}
+  .modal img{width:100%; height:100%; object-fit:cover;}
+  .modal-info{padding:44px 38px; display:flex; flex-direction:column; gap:16px;}
+  .modal-info h3{font-family:var(--display); font-size:clamp(26px,3vw,36px);}
+  .modal-close{position:absolute; top:20px; right:26px; color:#fff; font-family:var(--mono); font-size:13px; letter-spacing:0.06em; display:flex; align-items:center; gap:8px; z-index:5;}
+  @media (max-width:700px){.modal{grid-template-columns:1fr;} .modal img{max-height:280px;}}
+
+  /* back to top */
+  .totop{position:fixed; bottom:26px; right:26px; z-index:40; background:var(--ink); color:var(--paper); width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:16px; opacity:0; transform:translateY(10px); transition:opacity .25s ease, transform .25s ease;}
+  .totop.show{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="wordmark" onclick="scrollToId('top')">HEN.</button>
+  <button class="nav-toggle" id="navToggle">MENU</button>
+  <ul id="navList">
+    <li><a href="#work" class="nav-link">Work</a></li>
+    <li><a href="#about" class="nav-link">About</a></li>
+    <li><a href="#contact" class="nav-link">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero" id="top">
+  <div class="hero-eyebrow">AVAILABLE FOR NEW PROJECTS — 2026</div>
+  <h1>HEN</h1>
+  <div class="hero-sub">
+    <span>GRAPHIC DESIGN</span>
+    <span>MOTION GRAPHICS</span>
+    <span>3D MODELING</span>
+  </div>
+  <p class="hero-line">I build brand worlds from the ground up — identity, motion, and dimension, made to move together.</p>
+  <div class="scroll-cue"><div class="bar"></div>SCROLL</div>
+</section>
+
+<div class="section-label" id="work"><span>SELECTED WORK</span><div class="rule"></div><span id="countLabel">06 PROJECTS</span></div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-filter="all">ALL</button>
+  <button class="filter-btn" data-filter="graphic">GRAPHIC</button>
+  <button class="filter-btn" data-filter="motion">MOTION</button>
+  <button class="filter-btn" data-filter="3d">3D</button>
+</div>
+
+<div id="projectList">
+
+<article class="project" data-cat="graphic">
+  <div class="p-media marked" data-modal="0">
+    <img src="https://static.wixstatic.com/media/30d0dc_788af54fdbf9466a9b4e638c7c60c4ce~mv2.jpg/v1/fit/w_521,h_447,q_73,enc_avif,quality_auto/30d0dc_788af54fdbf9466a9b4e638c7c60c4ce~mv2.jpg" alt="Falafel brand identity">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">01 / 06</div>
+    <span class="p-tag red">BRAND IDENTITY</span>
+    <h3>Street Falafel Co.</h3>
+    <p class="p-story">A fast-casual falafel bar needed a mark that felt as fresh as the product. The identity leans on a hand-cut illustration style and a single saturated green, built to survive everything from a paper wrapper to a delivery-app thumbnail.</p>
+    <div class="p-meta"><span><b>Role</b> · Branding, Illustration</span><span><b>Tools</b> · Illustrator, Photoshop</span><span><b>Year</b> · 2025</span></div>
+    <button class="p-btn" data-modal="0">VIEW PROJECT →</button>
+  </div>
+</article>
+
+<article class="project flip" data-cat="graphic">
+  <div class="p-media marked" data-modal="1">
+    <img src="https://static.wixstatic.com/media/30d0dc_a314f2ad4df34a02a7b280aa15445c6e~mv2.jpg/v1/fit/w_375,h_494,q_73,enc_avif,quality_auto/30d0dc_a314f2ad4df34a02a7b280aa15445c6e~mv2.jpg" alt="Ice cream logo design">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">02 / 06</div>
+    <span class="p-tag blue">LOGO SYSTEM</span>
+    <h3>Frostbite Creamery</h3>
+    <p class="p-story">A logo built to melt — literally. The wordmark drips at the baseline, a small animated detail that carries over into the shop's cup design, signage, and social templates without losing legibility at any size.</p>
+    <div class="p-meta"><span><b>Role</b> · Logo, Type Design</span><span><b>Tools</b> · Illustrator, After Effects</span><span><b>Year</b> · 2024</span></div>
+    <button class="p-btn" data-modal="1">VIEW PROJECT →</button>
+  </div>
+</article>
+
+<article class="project" data-cat="motion">
+  <div class="p-media marked" data-modal="2">
+    <img src="https://static.wixstatic.com/media/30d0dc_1895515e455b4d95b0dbb6ec4a3b6e22~mv2.jpg/v1/fit/w_472,h_597,q_73,enc_avif,quality_auto/30d0dc_1895515e455b4d95b0dbb6ec4a3b6e22~mv2.jpg" alt="Burger brand campaign">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">03 / 06</div>
+    <span class="p-tag">ANIMATED CAMPAIGN</span>
+    <h3>Smoke &amp; Bun</h3>
+    <p class="p-story">A poster-to-motion campaign for a smash-burger launch. Bold cropped photography and a stencil display face were rebuilt as short looping animations for menu screens and social — same system, three speeds.</p>
+    <div class="p-meta"><span><b>Role</b> · Art Direction, Animation</span><span><b>Tools</b> · Photoshop, After Effects</span><span><b>Year</b> · 2024</span></div>
+    <button class="p-btn" data-modal="2">VIEW PROJECT →</button>
+  </div>
+</article>
+
+<article class="project flip" data-cat="motion">
+  <div class="p-media marked" data-modal="3">
+    <img src="https://static.wixstatic.com/media/30d0dc_9a3faeb5d24a41e1a471a035d5faab66~mv2.png/v1/fit/w_960,h_640,q_73,enc_avif,quality_auto/30d0dc_9a3faeb5d24a41e1a471a035d5faab66~mv2.png" alt="Kinetic logo reveal">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">04 / 06</div>
+    <span class="p-tag">LOGO REVEAL</span>
+    <h3>Kinetic Reveal Sting</h3>
+    <p class="p-story">A five-second logo sting built for pre-roll and intro slates. The mark assembles itself from moving grid fragments — a small technical exercise in timing, easing, and sound-synced motion.</p>
+    <div class="p-meta"><span><b>Role</b> · Motion Design</span><span><b>Tools</b> · After Effects</span><span><b>Year</b> · 2023</span></div>
+    <button class="p-btn" data-modal="3">VIEW PROJECT →</button>
+  </div>
+</article>
+
+<article class="project" data-cat="3d">
+  <div class="p-media marked" data-modal="4">
+    <img src="https://static.wixstatic.com/media/30d0dc_0e167211f1c6463b93a89a64943823b1~mv2.png/v1/fit/w_960,h_600,q_73,enc_avif,quality_auto/30d0dc_0e167211f1c6463b93a89a64943823b1~mv2.png" alt="3D render project">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">05 / 06</div>
+    <span class="p-tag blue">3D RENDER</span>
+    <h3>Product Render Reel</h3>
+    <p class="p-story">A short 3D turntable and lighting study built to test material realism under studio conditions — the kind of asset that gets reused across product pages, ads, and social teasers once the model is locked.</p>
+    <div class="p-meta"><span><b>Role</b> · Modeling, Lighting</span><span><b>Tools</b> · Blender, After Effects</span><span><b>Year</b> · 2023</span></div>
+    <button class="p-btn" data-modal="4">VIEW PROJECT →</button>
+  </div>
+</article>
+
+<article class="project flip" data-cat="3d">
+  <div class="p-media marked" data-modal="5">
+    <img src="https://static.wixstatic.com/media/30d0dc_bc7aa2e64e87467db280830555f87f8c~mv2.png/v1/fit/w_960,h_554,q_73,enc_avif,quality_auto/30d0dc_bc7aa2e64e87467db280830555f87f8c~mv2.png" alt="3D character turntable">
+    <span class="m2"></span><span class="m3"></span>
+  </div>
+  <div class="p-info">
+    <div class="p-num">06 / 06</div>
+    <span class="p-tag blue">3D CHARACTER</span>
+    <h3>Character Turntable</h3>
+    <p class="p-story">A stylized character build from block-out to final render — modeling, shading, and a simple rig, presented as a full 360° turntable to show construction from every angle.</p>
+    <div class="p-meta"><span><b>Role</b> · Modeling, Shading, Rigging</span><span><b>Tools</b> · Blender</span><span><b>Year</b> · 2023</span></div>
+    <button class="p-btn" data-modal="5">VIEW PROJECT →</button>
+  </div>
+</article>
+
+</div>
+
+<section class="about" id="about">
+  <h2>Design is<br>the whole system,<br>not just the mark.</h2>
+  <p>I'm Hen — a graphic, motion, and 3D designer working across brand identity, animated content, and dimensional visuals. Every project here started as a real brief and ended as something the client could actually use, on shelf, on screen, in motion. Replace these case studies with your own process shots, sketches, and final files whenever you're ready.</p>
+</section>
+
+<footer id="contact">
+  <button class="contact-btn" id="emailBtn"><span class="copied">Copied to clipboard ✓</span>Henfrigeone@gmail.com</button>
+  <div class="meta">© 2026 Hen Art Design<br>Based in Israel · Open to freelance &amp; full-time</div>
+</footer>
+
+<button class="totop" id="totop" aria-label="Back to top">↑</button>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <button class="modal-close" id="modalClose">CLOSE ✕</button>
+  <div class="modal">
+    <img id="modalImg" src="" alt="">
+    <div class="modal-info">
+      <div class="p-num" id="modalNum"></div>
+      <span class="p-tag" id="modalTag"></span>
+      <h3 id="modalTitle"></h3>
+      <p class="p-story" id="modalStory"></p>
+      <div class="p-meta" id="modalMeta"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- data (mirrors the cards above, used for modal content) ----
+  const projects = [
+    {num:"01 / 06", tag:"BRAND IDENTITY", tagClass:"red", title:"Street Falafel Co.",
+     story:"A fast-casual falafel bar needed a mark that felt as fresh as the product. The identity leans on a hand-cut illustration style and a single saturated green, built to survive everything from a paper wrapper to a delivery-app thumbnail.",
+     meta:"Role · Branding, Illustration &nbsp;·&nbsp; Tools · Illustrator, Photoshop &nbsp;·&nbsp; Year · 2025",
+     img:"https://static.wixstatic.com/media/30d0dc_788af54fdbf9466a9b4e638c7c60c4ce~mv2.jpg/v1/fit/w_521,h_447,q_73,enc_avif,quality_auto/30d0dc_788af54fdbf9466a9b4e638c7c60c4ce~mv2.jpg"},
+    {num:"02 / 06", tag:"LOGO SYSTEM", tagClass:"blue", title:"Frostbite Creamery",
+     story:"A logo built to melt — literally. The wordmark drips at the baseline, a small animated detail that carries over into the shop's cup design, signage, and social templates without losing legibility at any size.",
+     meta:"Role · Logo, Type Design &nbsp;·&nbsp; Tools · Illustrator, After Effects &nbsp;·&nbsp; Year · 2024",
+     img:"https://static.wixstatic.com/media/30d0dc_a314f2ad4df34a02a7b280aa15445c6e~mv2.jpg/v1/fit/w_375,h_494,q_73,enc_avif,quality_auto/30d0dc_a314f2ad4df34a02a7b280aa15445c6e~mv2.jpg"},
+    {num:"03 / 06", tag:"ANIMATED CAMPAIGN", tagClass:"", title:"Smoke & Bun",
+     story:"A poster-to-motion campaign for a smash-burger launch. Bold cropped photography and a stencil display face were rebuilt as short looping animations for menu screens and social — same system, three speeds.",
+     meta:"Role · Art Direction, Animation &nbsp;·&nbsp; Tools · Photoshop, After Effects &nbsp;·&nbsp; Year · 2024",
+     img:"https://static.wixstatic.com/media/30d0dc_1895515e455b4d95b0dbb6ec4a3b6e22~mv2.jpg/v1/fit/w_472,h_597,q_73,enc_avif,quality_auto/30d0dc_1895515e455b4d95b0dbb6ec4a3b6e22~mv2.jpg"},
+    {num:"04 / 06", tag:"LOGO REVEAL", tagClass:"", title:"Kinetic Reveal Sting",
+     story:"A five-second logo sting built for pre-roll and intro slates. The mark assembles itself from moving grid fragments — a small technical exercise in timing, easing, and sound-synced motion.",
+     meta:"Role · Motion Design &nbsp;·&nbsp; Tools · After Effects &nbsp;·&nbsp; Year · 2023",
+     img:"https://static.wixstatic.com/media/30d0dc_9a3faeb5d24a41e1a471a035d5faab66~mv2.png/v1/fit/w_960,h_640,q_73,enc_avif,quality_auto/30d0dc_9a3faeb5d24a41e1a471a035d5faab66~mv2.png"},
+    {num:"05 / 06", tag:"3D RENDER", tagClass:"blue", title:"Product Render Reel",
+     story:"A short 3D turntable and lighting study built to test material realism under studio conditions — the kind of asset that gets reused across product pages, ads, and social teasers once the model is locked.",
+     meta:"Role · Modeling, Lighting &nbsp;·&nbsp; Tools · Blender, After Effects &nbsp;·&nbsp; Year · 2023",
+     img:"https://static.wixstatic.com/media/30d0dc_0e167211f1c6463b93a89a64943823b1~mv2.png/v1/fit/w_960,h_600,q_73,enc_avif,quality_auto/30d0dc_0e167211f1c6463b93a89a64943823b1~mv2.png"},
+    {num:"06 / 06", tag:"3D CHARACTER", tagClass:"blue", title:"Character Turntable",
+     story:"A stylized character build from block-out to final render — modeling, shading, and a simple rig, presented as a full 360° turntable to show construction from every angle.",
+     meta:"Role · Modeling, Shading, Rigging &nbsp;·&nbsp; Tools · Blender &nbsp;·&nbsp; Year · 2023",
+     img:"https://static.wixstatic.com/media/30d0dc_bc7aa2e64e87467db280830555f87f8c~mv2.png/v1/fit/w_960,h_554,q_73,enc_avif,quality_auto/30d0dc_bc7aa2e64e87467db280830555f87f8c~mv2.png"}
+  ];
+
+  function scrollToId(id){document.getElementById(id).scrollIntoView({behavior:"smooth"});}
+
+  // mobile nav toggle
+  const navToggle = document.getElementById("navToggle");
+  const navList = document.getElementById("navList");
+  navToggle.addEventListener("click",()=>{
+    navList.classList.toggle("open");
+    navToggle.textContent = navList.classList.contains("open") ? "CLOSE" : "MENU";
+  });
+  document.querySelectorAll(".nav-link").forEach(l=>l.addEventListener("click",()=>{
+    navList.classList.remove("open"); navToggle.textContent="MENU";
+  }));
+
+  // filters
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const projectEls = document.querySelectorAll(".project");
+  const countLabel = document.getElementById("countLabel");
+  filterBtns.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      filterBtns.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const f = btn.dataset.filter;
+      let visible = 0;
+      projectEls.forEach(p=>{
+        const match = f==="all" || p.dataset.cat===f;
+        p.classList.toggle("hide", !match);
+        if(match) visible++;
+      });
+      countLabel.textContent = (visible<10?"0":"")+visible+" PROJECT"+(visible===1?"":"S");
+    });
+  });
+
+  // modal
+  const overlay = document.getElementById("modalOverlay");
+  const modalImg = document.getElementById("modalImg");
+  const modalNum = document.getElementById("modalNum");
+  const modalTag = document.getElementById("modalTag");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalStory = document.getElementById("modalStory");
+  const modalMeta = document.getElementById("modalMeta");
+
+  function openModal(i){
+    const p = projects[i];
+    modalImg.src = p.img; modalImg.alt = p.title;
+    modalNum.textContent = p.num;
+    modalTag.textContent = p.tag;
+    modalTag.className = "p-tag " + p.tagClass;
+    modalTitle.textContent = p.title;
+    modalStory.textContent = p.story;
+    modalMeta.innerHTML = "<span>"+p.meta+"</span>";
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal(){
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  document.querySelectorAll("[data-modal]").forEach(el=>{
+    el.addEventListener("click",()=>openModal(parseInt(el.dataset.modal,10)));
+  });
+  document.getElementById("modalClose").addEventListener("click",closeModal);
+  overlay.addEventListener("click",e=>{ if(e.target===overlay) closeModal(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+  // copy email
+  const emailBtn = document.getElementById("emailBtn");
+  emailBtn.addEventListener("click",()=>{
+    navigator.clipboard.writeText("Henfrigeone@gmail.com").then(()=>{
+      emailBtn.classList.add("copied-show");
+      setTimeout(()=>emailBtn.classList.remove("copied-show"),1600);
+    }).catch(()=>{ window.location.href = "mailto:Henfrigeone@gmail.com"; });
+  });
+
+  // back to top + active nav on scroll
+  const totop = document.getElementById("totop");
+  const sections = ["top","work","about","contact"].map(id=>document.getElementById(id));
+  const navLinks = document.querySelectorAll(".nav-link");
+  window.addEventListener("scroll",()=>{
+    totop.classList.toggle("show", window.scrollY > 700);
+    let current = sections[0].id;
+    sections.forEach(s=>{ if(window.scrollY >= s.offsetTop - 200) current = s.id; });
+    navLinks.forEach(l=>l.classList.toggle("active", l.getAttribute("href")==="#"+current));
+  });
+  totop.addEventListener("click",()=>scrollToId("top"));
+</script>
+
+</body>
+</html>
